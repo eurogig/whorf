@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: validation-webhook
+  labels:
+    app: validate
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: validate
+  template:
+    metadata:
+      labels:
+        app: validate
+    spec:
+      containers:
+      - name: webhook
+        image: eurogig/whorf@sha256:16397ee979fee6936d8d3e9579eceb659a653f2a16784d85091ddd3f9e421b84
+        ports:
+        - containerPort: 443
+        env:
+        - name: LABEL
+          value: development
+        volumeMounts:
+        - name: certs-volume
+          readOnly: true
+          mountPath: "/certs"
+        imagePullPolicy: Always
+      volumes:
+      - name: certs-volume
+        secret:
+          secretName: admission-tls
