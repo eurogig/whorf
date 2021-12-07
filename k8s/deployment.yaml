@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: validation-webhook
+  namespace: checkov-whorf
   labels:
     app: validate
 spec:
@@ -16,7 +17,7 @@ spec:
     spec:
       containers:
       - name: webhook
-        image: eurogig/whorf@sha256:16397ee979fee6936d8d3e9579eceb659a653f2a16784d85091ddd3f9e421b84
+        image: eurogig/whorf@sha256:a0f740b94aef6eaa62b6c50b20e97ac1a510bd529e354aaed8f5dd0e8d30212e
         ports:
         - containerPort: 443
         env:
@@ -26,8 +27,13 @@ spec:
         - name: certs-volume
           readOnly: true
           mountPath: "/certs"
+        - name: "config"
+          mountPath: "/app/config"
         imagePullPolicy: Always
       volumes:
       - name: certs-volume
         secret:
           secretName: admission-tls
+      - name: "config"
+        configMap:
+          name: "checkovconfig"

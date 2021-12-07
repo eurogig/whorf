@@ -1,6 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata:
+  namespace: checkov-whorf
   name: validate
 spec:
   selector:

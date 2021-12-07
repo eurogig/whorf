@@ -1,20 +1,14 @@
 from flask import Flask, request, jsonify
-from os import environ, system
+from os import environ, remove 
 import logging
 import json
+import subprocess
 import yaml
 from datetime import datetime
 
 webhook = Flask(__name__)
 
-webhook.config['LABEL'] = environ.get('LABEL')
-
 webhook.logger.setLevel(logging.INFO)
-
-
-if "LABEL" not in environ:
-    webhook.logger.error("Required environment variable for label isn't set. Exiting...")
-    exit(1)
 
 
 @webhook.route('/validate', methods=['POST'])
@@ -22,22 +16,29 @@ def validating_webhook():
     request_info = request.get_json()
     uid = request_info["request"].get("uid")
 
-    ff = open('k8sobj.json', 'w+')
-    yf = open('k8sobj.yaml', 'w+')
+    jsonfile = uid + "-req.json"
+    yamlfile = uid + "-req.yaml"
+    checkovfile = uid + "-result.json"
+
+    ff = open(jsonfile, 'w+')
+    yf = open(yamlfile, 'w+')
     json.dump(request_info, ff)
     yaml.dump(todict(request_info["request"]["object"]),yf)
 
-    system('checkov --framework kubernetes -o json -f k8sobj.yaml > checkov.json')
+#   cmd = f"checkov --config-file config/.checkov.yaml -f {yamlfile} > {checkovfile}"
+    cp = subprocess.run(["checkov","--config-file","config/.checkov.yaml","-f",yamlfile], universal_newlines=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-    d = open('checkov.json','r')
-    checkovresults = json.load(d)
+    checkovresults = json.loads(cp.stdout)
 
-    if checkovresults["summary"]["failed"] > 0:
+    remove(jsonfile)
+    remove(yamlfile)
+
+    if cp.returncode != 0:
         webhook.logger.error(f'Object {request_info["request"]["object"]["kind"]}/{request_info["request"]["object"]["metadata"]["name"]} failed security checks. Request rejected!')
-        return admission_response(False, uid, f"Checkov found {checkovresults['summary']['failed']} issues in this manifest!")
+        return admission_response(False, uid, f"Checkov found issues in violation of admission policy.  Checkov found {checkovresults['summary']['failed']} total issues in this manifest!")
     else:
         webhook.logger.info(f'Object {request_info["request"]["object"]["kind"]}/{request_info["request"]["object"]["metadata"]["name"]} passed security checks. Allowing the request.')
-        return admission_response(True, uid, f"Checkov found {checkovresults['summary']['failed']} issues in this manifest! Congrats!")
+        return admission_response(True, uid, f"Checkov found no issues in violation of admission policy. {checkovresults['summary']['failed']} issues in this manifest!")
 
 
 def todict(obj):
