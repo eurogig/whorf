@@ -19,14 +19,14 @@ def validating_webhook():
     jsonfile = uid + "-req.json"
     yamlfile = uid + "-req.yaml"
     checkovfile = uid + "-result.json"
+    configfile = "config/.checkov.yaml"
 
     ff = open(jsonfile, 'w+')
     yf = open(yamlfile, 'w+')
     json.dump(request_info, ff)
     yaml.dump(todict(request_info["request"]["object"]),yf)
 
-#   cmd = f"checkov --config-file config/.checkov.yaml -f {yamlfile} > {checkovfile}"
-    cp = subprocess.run(["checkov","--config-file","config/.checkov.yaml","-f",yamlfile], universal_newlines=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    cp = subprocess.run(["checkov","--config-file",configfile,"-f",yamlfile], universal_newlines=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
     checkovresults = json.loads(cp.stdout)
 
@@ -34,11 +34,42 @@ def validating_webhook():
     remove(yamlfile)
 
     if cp.returncode != 0:
+
+
+        # open configfile to check for hard fail CKVs
+        with open(configfile, 'r') as config:
+            cf = yaml.safe_load(config)
+
+        response = ""
+        if "hard-fail-on" in cf:
+            hard_fails = {}
+            try:
+                for ckv in cf["hard-fail-on"]:
+                    for fail in checkovresults["results"]["failed_checks"]:
+                        if (ckv == fail["check_id"]):
+                            hard_fails[ckv] = f"\n  Description: {fail['check_name']}"
+                            if fail['guideline'] != "":
+                                hard_fails[ckv] =  hard_fails[ckv] + f"\n  Guidance: {fail['guideline']}"
+    
+            except:
+                print ("hard fail error")
+        
+            if (len(hard_fails) > 0):
+                response = f"\nCheckov found {len(hard_fails)} issues in violation of admission policy.\n"
+    
+                for ckv in hard_fails:
+                    response = response + f"{ckv}:{hard_fails[ckv]}\n"
+
+        response = response + f"Checkov found {checkovresults['summary']['failed']} total issues in this manifest.\n"
+        response = response + f"\nFor complete details: {checkovresults['url']}\n"
+       
+    
         webhook.logger.error(f'Object {request_info["request"]["object"]["kind"]}/{request_info["request"]["object"]["metadata"]["name"]} failed security checks. Request rejected!')
-        return admission_response(False, uid, f"Checkov found issues in violation of admission policy.  Checkov found {checkovresults['summary']['failed']} total issues in this manifest!")
+        return admission_response(False, uid, response)
+
     else:
         webhook.logger.info(f'Object {request_info["request"]["object"]["kind"]}/{request_info["request"]["object"]["metadata"]["name"]} passed security checks. Allowing the request.')
-        return admission_response(True, uid, f"Checkov found no issues in violation of admission policy. {checkovresults['summary']['failed']} issues in this manifest!")
+        return admission_response(True, uid, f"Checkov found checkovresults['summary']['failed'] issues. None in violation of admission policy. {checkovresults['summary']['failed']} issues in this manifest!")
 
 
 def todict(obj):

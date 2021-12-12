@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: webhook
-        image: eurogig/whorf@sha256:a0f740b94aef6eaa62b6c50b20e97ac1a510bd529e354aaed8f5dd0e8d30212e
+        image: eurogig/whorf@sha256:85c489b9ad0c54a4efd4f1a77c2485c3fdf9919ef10024fee8d3cbf1b3d1fbfc
         ports:
         - containerPort: 443
         env:

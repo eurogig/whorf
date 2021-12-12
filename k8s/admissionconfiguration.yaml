@@ -7,6 +7,7 @@ webhooks:
   - name: validate.checkov-whorf.svc
     failurePolicy: Fail
     sideEffects: None
+    timeoutSeconds: 30
     admissionReviewVersions: ["v1","v1beta1"]
     rules:
       - apiGroups: ["apps", ""]
