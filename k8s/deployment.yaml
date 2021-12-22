@@ -21,6 +21,8 @@ spec:
         ports:
         - containerPort: 443
         env:
+        - name: BC_SOURCE
+          value: cli
         - name: LABEL
           value: development
         volumeMounts:

@@ -7,8 +7,7 @@ metadata:
 data:
   .checkov.yaml: |
     branch: master
-    repo-id: k8s/ac
-    bc-api-key: b0e5278a-d2c3-5685-a9a1-5d114780526e
+    repo-id: k8sac/cluster
     download-external-modules: false
     evaluate-variables: true
     external-modules-download-path: .external_modules
