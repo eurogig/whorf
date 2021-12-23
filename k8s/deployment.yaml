@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: validation-webhook
-  namespace: checkov-whorf
+  namespace: bridgecrew
   labels:
     app: validate
 spec:
@@ -25,6 +25,16 @@ spec:
           value: cli
         - name: LABEL
           value: development
+        - name: BC_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: bridgecrew-rt-secret
+              key: BC_API_KEY
+        - name: REPO_ID
+          valueFrom:
+            secretKeyRef:
+              name: bridgecrew-rt-secret
+              key: REPO_ID
         volumeMounts:
         - name: certs-volume
           readOnly: true
