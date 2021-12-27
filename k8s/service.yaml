@@ -8,3 +8,4 @@ spec:
     app: validate
   ports:
   - port: 443
+    targetPort: 8443

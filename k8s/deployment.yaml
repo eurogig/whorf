@@ -17,9 +17,9 @@ spec:
     spec:
       containers:
       - name: webhook
-        image: eurogig/whorf@sha256:85c489b9ad0c54a4efd4f1a77c2485c3fdf9919ef10024fee8d3cbf1b3d1fbfc
+        image: eurogig/whorf@sha256:6b0ed00955183537c1227b754c4972ea093fd04bb79bce8d02cd278e49251e06
         ports:
-        - containerPort: 443
+        - containerPort: 8443
         env:
         - name: BC_SOURCE
           value: cli
