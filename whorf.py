@@ -10,15 +10,17 @@ webhook = Flask(__name__)
 
 webhook.logger.setLevel(logging.INFO)
 
+@webhook.route('/', methods=['GET'])
+def hello():
+    return "<h1 style='color:blue'>Ready!</h1>"
 
 @webhook.route('/validate', methods=['POST'])
 def validating_webhook():
     request_info = request.get_json()
     uid = request_info["request"].get("uid")
 
-    jsonfile = uid + "-req.json"
-    yamlfile = uid + "-req.yaml"
-    checkovfile = uid + "-result.json"
+    jsonfile = "tmp/" + uid + "-req.json"
+    yamlfile = "tmp/" + uid + "-req.yaml"
     configfile = "config/.checkov.yaml"
 
     ff = open(jsonfile, 'w+')

@@ -14,10 +14,41 @@ spec:
     metadata:
       labels:
         app: validate
+      annotations:
+        seccomp.security.alpha.kubernetes.io/pod: "docker/default"
     spec:
       containers:
       - name: webhook
-        image: eurogig/whorf@sha256:6b0ed00955183537c1227b754c4972ea093fd04bb79bce8d02cd278e49251e06
+        securityContext:
+          readOnlyRootFilesystem: true
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - ALL
+              - NET_RAW
+        image: eurogig/whorf@sha256:7bc3e945fb27df6930c8b1d9497dc0ae8206e0bdfa09499d1ba96112dd411946
+        imagePullPolicy: Always
+        resources:
+          limits:
+            cpu: "1"
+            memory: "500Mi"
+          requests:
+            cpu: "0.1"
+            memory: "100Mi"
+        readinessProbe:
+          initialDelaySeconds: 15
+          exec:
+            command:
+              - /bin/sh
+              - -c 
+              - "pidof -x gunicorn"
+        livenessProbe:
+          initialDelaySeconds: 30
+          exec:
+            command:
+              - /bin/sh
+              - -c 
+              - "pidof -x gunicorn"
         ports:
         - containerPort: 8443
         env:
@@ -41,7 +72,16 @@ spec:
           mountPath: "/certs"
         - name: "config"
           mountPath: "/app/config"
+        - name: "apptmp"
+          mountPath: "/app/tmp"
+        - name: "tmp"
+          mountPath: "/tmp"
         imagePullPolicy: Always
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 11000
+        runAsGroup: 11000
       volumes:
       - name: certs-volume
         secret:
@@ -49,3 +89,7 @@ spec:
       - name: "config"
         configMap:
           name: "checkovconfig"
+      - emptyDir: {}
+        name: apptmp
+      - emptyDir: {}
+        name: tmp
