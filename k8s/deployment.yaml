@@ -6,7 +6,7 @@ metadata:
   labels:
     app: validate
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: validate
@@ -54,19 +54,10 @@ spec:
         env:
         - name: BC_SOURCE
           value: cli
-        - name: LABEL
-          value: development
-        - name: BC_API_KEY
-          valueFrom:
-            secretKeyRef:
-              name: bridgecrew-rt-secret
-              key: BC_API_KEY
-        - name: REPO_ID
-          valueFrom:
-            secretKeyRef:
-              name: bridgecrew-rt-secret
-              key: REPO_ID
         volumeMounts:
+        - name: bc_api_key-volume
+          readOnly: true
+          mountPath: "/home/app/.bridgecrew"
         - name: certs-volume
           readOnly: true
           mountPath: "/certs"
@@ -83,6 +74,9 @@ spec:
         runAsUser: 11000
         runAsGroup: 11000
       volumes:
+      - name: bridgecrew-rt-secret
+        secret:
+          secretName: credentials
       - name: certs-volume
         secret:
           secretName: admission-tls
