@@ -71,7 +71,7 @@ def validating_webhook():
 
     else:
         webhook.logger.info(f'Object {request_info["request"]["object"]["kind"]}/{request_info["request"]["object"]["metadata"]["name"]} passed security checks. Allowing the request.')
-        return admission_response(True, uid, f"Checkov found checkovresults['summary']['failed'] issues. None in violation of admission policy. {checkovresults['summary']['failed']} issues in this manifest!")
+        return admission_response(True, uid, f"Checkov found {checkovresults['summary']['failed']} issues. None in violation of admission policy. {checkovresults['summary']['failed']} issues in this manifest!")
 
 
 def todict(obj):
