@@ -76,7 +76,7 @@ spec:
       volumes:
       - name: bridgecrew-rt-secret
         secret:
-          secretName: credentials
+          secretName: bridgecrew-rt-secret
       - name: certs-volume
         secret:
           secretName: admission-tls
