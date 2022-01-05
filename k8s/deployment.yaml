@@ -55,7 +55,7 @@ spec:
         - name: BC_SOURCE
           value: cli
         volumeMounts:
-        - name: bc_api_key-volume
+        - name: bridgecrew-rt-secret
           readOnly: true
           mountPath: "/home/app/.bridgecrew"
         - name: certs-volume

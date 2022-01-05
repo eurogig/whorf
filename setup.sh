@@ -20,9 +20,9 @@ admissionregistration=https://raw.githubusercontent.com/eurogig/whorf/main/k8s/a
 service=https://raw.githubusercontent.com/eurogig/whorf/main/k8s/service.yaml
 
 curl -o $k8sdir/deployment.yaml $deployment
-curl -o $k8sdir/checkovconfig.yaml $configmap
 curl -o $k8sdir/service.yaml $service
-# Pop this into the temp directory as we'll insert a cert into it and pipe in into the k8s dir
+# Pop these into the temp directory as we'll make some customisations pipe in into the k8s dir
+curl -o $certdir/checkovconfig.yaml $configmap
 curl -o $certdir/admissionconfiguration.yaml $admissionregistration
 
 # the namespace
@@ -41,8 +41,7 @@ echo "Generating TLS certs ..."
 kubectl create secret generic admission-tls -n bridgecrew --type=Opaque --from-file=$certdir/webhook.key --from-file=$certdir/webhook.crt --dry-run=client -o yaml > $k8sdir/secret.yaml
 
 kubectl create secret generic bridgecrew-rt-secret \
-   --from-literal=BC_API_KEY=$bcapikey \
-   --from-literal=REPO_ID="k8sac/${cluster}" -n bridgecrew --dry-run=client -o yaml > $k8sdir/secret-apikey.yaml
+   --from-literal=credentials=$bcapikey -n bridgecrew --dry-run=client -o yaml > $k8sdir/secret-apikey.yaml
 
 # Create the `bridgecrew` namespace.
 echo "Creating Kubernetes objects ..."
@@ -51,6 +50,9 @@ echo "Creating Kubernetes objects ..."
 # template with it. Then, create the Kubernetes resources.
 ca_pem_b64="$(openssl base64 -A <"${certdir}/webhook.crt")"
 sed -e 's@${CA_PEM_B64}@'"$ca_pem_b64"'@g' "${certdir}/admissionconfiguration.yaml"  > "${k8sdir}/admissionconfiguration.yaml"
+
+# Change the cluster in the checkovconfig to our cluster name
+sed -e 's@cluster@'"$cluster"'@g' "${certdir}/checkovconfig.yaml"  > "${k8sdir}/checkovconfig.yaml"
 
 # Apply everything in the bridgecrew directory in the correct order
 kubectl apply -f $k8sdir/namespace.yaml 
