@@ -10,6 +10,11 @@ spec:
   selector:
     matchLabels:
       app: validate
+  strategy:
+      type: RollingUpdate
+      rollingUpdate:
+        maxSurge: 1
+        maxUnavailable: 0
   template:
     metadata:
       labels:
@@ -26,7 +31,7 @@ spec:
             drop:
               - ALL
               - NET_RAW
-        image: eurogig/whorf@sha256:7bc3e945fb27df6930c8b1d9497dc0ae8206e0bdfa09499d1ba96112dd411946
+        image: eurogig/whorf:0.5
         imagePullPolicy: Always
         resources:
           limits:
