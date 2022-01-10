@@ -40,7 +40,7 @@ echo "Generating TLS certs ..."
 
 kubectl create secret generic admission-tls -n bridgecrew --type=Opaque --from-file=$certdir/webhook.key --from-file=$certdir/webhook.crt --dry-run=client -o yaml > $k8sdir/secret.yaml
 
-kubectl create secret generic bridgecrew-rt-secret \
+kubectl create secret generic bridgecrew-secret \
    --from-literal=credentials=$bcapikey -n bridgecrew --dry-run=client -o yaml > $k8sdir/secret-apikey.yaml
 
 # Create the `bridgecrew` namespace.

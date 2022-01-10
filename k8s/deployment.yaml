@@ -60,7 +60,7 @@ spec:
         - name: BC_SOURCE
           value: cli
         volumeMounts:
-        - name: bridgecrew-rt-secret
+        - name: bridgecrew-secret
           readOnly: true
           mountPath: "/home/app/.bridgecrew"
         - name: certs-volume
@@ -79,9 +79,9 @@ spec:
         runAsUser: 11000
         runAsGroup: 11000
       volumes:
-      - name: bridgecrew-rt-secret
+      - name: bridgecrew-secret
         secret:
-          secretName: bridgecrew-rt-secret
+          secretName: bridgecrew-secret
       - name: certs-volume
         secret:
           secretName: admission-tls
