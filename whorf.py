@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify
-from os import environ, remove 
+from os import environ, remove, getenv 
 import logging
 import json
 import subprocess
@@ -23,6 +23,7 @@ def validating_webhook():
     yamlfile = "tmp/" + uid + "-req.yaml"
     configfile = "config/.checkov.yaml"
 
+
     ff = open(jsonfile, 'w+')
     yf = open(yamlfile, 'w+')
     json.dump(request_info, ff)
@@ -32,8 +33,12 @@ def validating_webhook():
 
     checkovresults = json.loads(cp.stdout)
 
-    remove(jsonfile)
-    remove(yamlfile)
+    # check the debug env.  If 'yes' we don't delete the evidence of the scan.  Just in case it's misbehaving.
+    # to active add an env DEBUG:yes to the deployment manifest
+    debug = getenv('DEBUG')
+    if (debug.lower() != "yes"):
+        remove(jsonfile)
+        remove(yamlfile)
 
     if cp.returncode != 0:
 
