@@ -66,4 +66,7 @@ kubectl apply -f $k8sdir/admissionconfiguration.yaml
 # Delete the key directory to prevent abuse (DO NOT USE THESE KEYS ANYWHERE ELSE).
 rm -rf "$certdir"
 
+# Wait for the deployment to be available
+echo "Waiting for deployment to be Ready..."
+kubectl wait --for=condition=Available deployment/validation-webhook -n bridgecrew
 echo "The webhook server has been deployed and configured!"

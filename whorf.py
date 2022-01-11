@@ -35,10 +35,11 @@ def validating_webhook():
 
     # check the debug env.  If 'yes' we don't delete the evidence of the scan.  Just in case it's misbehaving.
     # to active add an env DEBUG:yes to the deployment manifest
-    debug = getenv('DEBUG')
-    if (debug.lower() != "yes"):
-        remove(jsonfile)
-        remove(yamlfile)
+    if (getenv("DEBUG")) is not None:
+      debug = getenv("DEBUG")
+      if (debug.lower() != "yes"):
+          remove(jsonfile)
+          remove(yamlfile)
 
     if cp.returncode != 0:
 

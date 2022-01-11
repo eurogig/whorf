@@ -31,7 +31,7 @@ spec:
             drop:
               - ALL
               - NET_RAW
-        image: eurogig/whorf@sha256:1539e0515870d2729d54a16b00b8bd27f242bad9701ff4b7cd5afb7f66e0a8b9
+        image: eurogig/whorf@sha256:906e14d691636bcaf47a17c763965df3f3d4a27af36175c59305c9910b087892
         imagePullPolicy: Always
         resources:
           limits:
